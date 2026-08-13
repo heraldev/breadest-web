@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+/*
+  Esto NO es CSS personalizado de estilos: es la forma en que Tailwind v4
+  registra tokens de diseño (fuentes y colores) para poder usarlos como
+  clases utilitarias normales, ej: font-display, font-body, bg-cream,
+  text-espresso, bg-caramel, border-wheat, bg-roast, etc.
+  Toda la maquetación del sitio se hace exclusivamente con esas clases.
+*/
+@theme {
+  --font-display: "Playfair Display", ui-serif, Georgia, serif;
+  --font-body: "Poppins", ui-sans-serif, system-ui, sans-serif;
+
+  --color-cream: #faf6f0;
+  --color-espresso: #2a1d14;
+  --color-caramel: #a9784c;
+  --color-wheat: #e4cba3;
+  --color-roast: #5c3a21;
+
+    /* Acento exclusivo para el banner de temporada (Día de Muertos) */
+  --color-marigold: #c9762b;
+}
