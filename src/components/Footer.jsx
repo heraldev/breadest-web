@@ -54,16 +54,16 @@ function Footer() {
           </h3>
           <ul className="mt-4 space-y-3 text-sm text-cream/80">
             <li>
-              <a href="#" className="hover:text-wheat">Cafetería Trigo &amp; Miel</a>
+              <Link to="/cafeteria" className="hover:text-wheat">Cafetería Trigo &amp; Miel</Link>
             </li>
             <li>
-              <a href="#" className="hover:text-wheat">Escuela de Panadería T&amp;M</a>
+              <Link to="/escuela" className="hover:text-wheat">Escuela de Panadería T&amp;M</Link>
             </li>
             <li>
-              <a href="#" className="hover:text-wheat">Venta al mayoreo</a>
+              <Link to="/mayoreo" className="hover:text-wheat">Venta al mayoreo</Link>
             </li>
             <li>
-              <a href="#" className="hover:text-wheat">Eventos y catering</a>
+              <Link to="/catering" className="hover:text-wheat">Eventos y catering</Link>
             </li>
           </ul>
         </div>
@@ -81,10 +81,10 @@ function Footer() {
               <Link to="/menu" className="hover:text-wheat">Menú completo</Link>
             </li>
             <li>
-              <a href="#" className="hover:text-wheat">Preguntas frecuentes</a>
+              <Link to="/faq" className="hover:text-wheat">Preguntas frecuentes</Link>
             </li>
             <li>
-              <a href="#" className="hover:text-wheat">Aviso de privacidad</a>
+              <Link to="/aviso-privacidad" className="hover:text-wheat">Aviso de privacidad</Link>
             </li>
           </ul>
         </div>

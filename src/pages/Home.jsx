@@ -1,8 +1,10 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import SectionHeading from '../components/SectionHeading.jsx'
 import ProductCard from '../components/ProductCard.jsx'
 import panMainImg from '../assets/images/PanMain.jpg';
-import { getActiveSeason } from '../utils/getSeason.jsx'
+import { ROSCA_DE_REYES } from '../utils/seasons.jsx'
+import { getBannerTemporada } from '../services/crud.js'
 
 const FEATURED = [
   {
@@ -32,15 +34,29 @@ const FEATURED = [
 ]
 
 function Home() {
-  const season = getActiveSeason()
+  // El banner únicamente depende del switch
+  // del panel del Editor (banner_temporada_activo, tabla `configuraciones`).
+  const [bannerActivo, setBannerActivo] = useState(false)
+  const [cargandoBanner, setCargandoBanner] = useState(true)
+
+  useEffect(() => {
+    getBannerTemporada()
+      .then(setBannerActivo)
+      .catch(() => setBannerActivo(false))
+      .finally(() => setCargandoBanner(false))
+  }, [])
+
+  // Mientras carga no mostramos nada (evita el parpadeo de "sí hay banner"
+  // por una fracción de segundo si en realidad está desactivado).
+  const season = !cargandoBanner && bannerActivo ? ROSCA_DE_REYES : null
 
   return (
     <>
-      {/* Banner de temporada — evento basado en periodo (calendario) */}
+      {/* Banner de temporada — controlado 100% por el switch del editor */}
       {season && (
-        <div className="border-b-2 border-marigold bg-marigold/10 px-6 py-3 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-marigold sm:text-sm">
-            🎃 {season.badge} · {season.description}
+        <div className="border-b-2 border-red-700 bg-red-700/10 px-6 py-3 text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-red-700 sm:text-sm">
+            {season.badge} · {season.description}
           </p>
         </div>
       )}
@@ -51,7 +67,7 @@ function Home() {
           <div>
             <span
               className={`mb-5 inline-block border px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${
-                season ? 'border-marigold text-marigold' : 'border-caramel text-caramel'
+                season ? 'border-red-700 text-red-700' : 'border-caramel text-caramel'
               }`}
             >
               {season ? season.badge : 'Horneado diario desde 1998'}
@@ -77,7 +93,7 @@ function Home() {
                 to={season ? season.ctaTo : '/menu'}
                 className={`border-2 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-cream transition-colors ${
                   season
-                    ? 'border-marigold bg-marigold hover:border-caramel hover:bg-caramel'
+                    ? 'border-red-700 bg-red-700 hover:border-caramel hover:bg-caramel'
                     : 'border-espresso bg-espresso hover:border-caramel hover:bg-caramel'
                 }`}
               >

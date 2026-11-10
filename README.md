@@ -1,16 +1,31 @@
-# React + Vite
+# Trigo & Miel · Breadest
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Sitio web de una panadería artesanal con backend propio de autenticación y control de acceso por roles y permisos (RBAC).
 
-Currently, two official plugins are available:
+## Tecnologías
+- **Frontend:** React 19, Vite, Tailwind CSS v4, React Router, Axios
+- **Backend:** Node.js, Express, MySQL (`mysql2`), JWT, `bcryptjs`, `helmet`, `express-rate-limit`
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Funciones
+- Landing pública: Inicio, Nosotros, Menú, Contacto (con mapa de Google)
+- Registro, inicio y cierre de sesión (JWT con lista negra de tokens)
+- **Administrador:** activa o desactiva cuentas de Editor
+- **Editor:** activa o desactiva el banner de temporada del Home
+- Rutas protegidas por rol y permiso, validadas en el backend
 
-## React Compiler
+## Estructura
+```
+breadest/
+├── breadest-f/          # Frontend (components, pages, routes, services, utils)
+└── breadest-backend/    # Backend (config, controllers, middlewares, models, routes, services, sql)
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## Expanding the ESLint configuration
+## Roles
+| Rol | Alcance |
+|---|---|
+| Administrador | Todos los permisos |
+| Editor | Productos, pedidos y configuración del sitio |
+| Usuario | Consulta de productos y sus pedidos |
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+> Todo registro público entra como *Usuario*. El primer Administrador se asigna manualmente en `usuario_rol`.

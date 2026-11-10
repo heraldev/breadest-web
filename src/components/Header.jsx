@@ -10,8 +10,7 @@ const MENU_CATEGORIES = [
 ]
 
 const navLinkClasses = ({ isActive }) =>
-  `border-b-2 py-2 text-sm font-medium uppercase tracking-wide transition-colors ${
-    isActive ? 'border-caramel text-roast' : 'border-transparent text-espresso hover:border-caramel'
+  `border-b-2 py-2 text-sm font-medium uppercase tracking-wide transition-colors ${isActive ? 'border-caramel text-roast' : 'border-transparent text-espresso hover:border-caramel'
   }`
 
 function Header() {
@@ -48,12 +47,24 @@ function Header() {
           </NavLink>
         </nav>
 
-        <Link
-          to="/contacto"
-          className="hidden border-2 border-espresso bg-espresso px-5 py-2 text-sm font-medium uppercase tracking-wide text-cream transition-colors hover:bg-caramel hover:border-caramel md:block"
-        >
-          Haz tu pedido
-        </Link>
+        <div className="hidden items-center gap-4 md:flex">
+          {/* Botón Clarito / Secundario: Iniciar Sesión */}
+          <Link
+            to="/login"
+            className="rounded-lg border border-espresso/20 bg-wheat/20 px-4 py-2 text-sm font-medium tracking-wide text-espresso transition-all hover:bg-wheat/40 hover:text-caramel"
+          >
+            Iniciar Sesión
+          </Link>
+
+          {/* Botón Café / Principal: Registrarme */}
+          <Link
+            to="/register"
+            className="rounded-lg bg-espresso px-4 py-2 text-sm font-medium tracking-wide text-caramel shadow-sm transition-all hover:bg-espresso/90 hover:shadow"
+          >
+            Registrarme
+          </Link>
+        </div>
+
 
         {/* Botón hamburguesa móvil */}
         <button
@@ -77,26 +88,34 @@ function Header() {
       {mobileOpen && (
         <div className="border-t border-espresso/10 bg-cream md:hidden">
           <nav className="flex flex-col divide-y divide-espresso/10">
-            <Link to="/" className="px-6 py-3 text-sm font-medium uppercase tracking-wide" onClick={() => setMobileOpen(false)}>
+            <Link
+              to="/"
+              className="px-6 py-3 text-sm font-medium uppercase tracking-wide text-espresso"
+              onClick={() => setMobileOpen(false)}
+            >
               Inicio
             </Link>
-            <Link to="/nosotros" className="px-6 py-3 text-sm font-medium uppercase tracking-wide" onClick={() => setMobileOpen(false)}>
+
+            <Link
+              to="/nosotros"
+              className="px-6 py-3 text-sm font-medium uppercase tracking-wide text-espresso"
+              onClick={() => setMobileOpen(false)}
+            >
               Nosotros
             </Link>
 
             <div>
               <button
                 type="button"
-                className="flex w-full items-center justify-between px-6 py-3 text-sm font-medium uppercase tracking-wide"
+                className="flex w-full items-center justify-between px-6 py-3 text-sm font-medium uppercase tracking-wide text-espresso"
                 aria-expanded={mobileMenuExpanded}
                 onClick={() => setMobileMenuExpanded((v) => !v)}
               >
                 Menú
                 <svg
                   viewBox="0 0 24 24"
-                  className={`h-3.5 w-3.5 fill-none stroke-current stroke-2 transition-transform ${
-                    mobileMenuExpanded ? 'rotate-180' : ''
-                  }`}
+                  className={`h-3.5 w-3.5 fill-none stroke-current stroke-2 transition-transform ${mobileMenuExpanded ? 'rotate-180' : ''
+                    }`}
                 >
                   <path d="M6 9l6 6 6-6" strokeLinecap="square" />
                 </svg>
@@ -107,7 +126,7 @@ function Header() {
                     <li key={item.to}>
                       <Link
                         to={item.to}
-                        className="block px-10 py-2.5 text-sm text-espresso/80"
+                        className="block px-10 py-2.5 text-sm text-espresso/80 hover:text-caramel"
                         onClick={() => setMobileOpen(false)}
                       >
                         {item.label}
@@ -118,16 +137,35 @@ function Header() {
               )}
             </div>
 
-            <Link to="/contacto" className="px-6 py-3 text-sm font-medium uppercase tracking-wide" onClick={() => setMobileOpen(false)}>
-              Contacto
-            </Link>
             <Link
               to="/contacto"
-              className="bg-espresso px-6 py-3 text-center text-sm font-medium uppercase tracking-wide text-cream"
+              className="px-6 py-3 text-sm font-medium uppercase tracking-wide text-espresso"
               onClick={() => setMobileOpen(false)}
             >
-              Haz tu pedido
+              Contacto
             </Link>
+
+            {/* Botones de Autenticación para Móvil */}
+            <div className="flex flex-col gap-3 px-6 py-4">
+              {/* Botón Clarito / Secundario: Iniciar Sesión */}
+              <Link
+                to="/login"
+                className="w-full rounded-lg border border-espresso/20 bg-wheat/20 py-2.5 text-center text-sm font-medium tracking-wide text-espresso transition-all hover:bg-wheat/40 hover:text-caramel"
+                onClick={() => setMobileOpen(false)}
+              >
+                Iniciar Sesión
+              </Link>
+
+              {/* Botón Café / Principal: Registrarme */}
+              <Link
+                to="/register"
+                className="w-full rounded-lg bg-espresso py-2.5 text-center text-sm font-medium tracking-wide text-caramel shadow-sm transition-all hover:bg-espresso/90 hover:shadow"
+                onClick={() => setMobileOpen(false)}
+              >
+                Registrarme
+              </Link>
+            </div>
+
           </nav>
         </div>
       )}

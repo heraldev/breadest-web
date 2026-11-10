@@ -51,6 +51,7 @@ function NavDropdown({ label, items }) {
             <li key={item.to}>
               <Link
                 to={item.to}
+                onClick={() => setOpen(false)}
                 className="block px-4 py-3 text-sm text-espresso transition-colors hover:bg-wheat/40 hover:text-roast"
               >
                 {item.label}
