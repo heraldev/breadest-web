@@ -24,11 +24,16 @@ export const loginUser = async ({ email, password }) => {
 
     localStorage.setItem('token', token)
     localStorage.setItem('usuario', JSON.stringify(usuario))
+    notifyAuthChange()
 
     return response.data
   } catch (error) {
     throw error.response?.data || { error: 'Error al iniciar sesión' }
   }
+}
+
+const notifyAuthChange = () => {
+  window.dispatchEvent(new Event('auth-changed'))
 }
 
 /**
@@ -44,6 +49,7 @@ export const logoutUser = async () => {
   } finally {
     localStorage.removeItem('token')
     localStorage.removeItem('usuario')
+    notifyAuthChange()
   }
 }
 

@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom'
-import { isAuthenticated, getStoredUser } from '../services/auth.js'
+import { isAuthenticated, getStoredUser } from '../services/authService.js'
 
 function ProtectedRoute({ children, allowedRoles }) {
   // 1. Verificar si existe sesión activa

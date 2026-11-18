@@ -4,7 +4,7 @@ import SectionHeading from '../components/SectionHeading.jsx'
 import ProductCard from '../components/ProductCard.jsx'
 import panMainImg from '../assets/images/PanMain.jpg';
 import { ROSCA_DE_REYES } from '../utils/seasons.jsx'
-import { getBannerTemporada } from '../services/crud.js'
+import { getBannerTemporada } from '../services/editorService.js'
 
 const FEATURED = [
   {

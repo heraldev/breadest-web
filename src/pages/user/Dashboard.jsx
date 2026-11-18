@@ -1,220 +1,132 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { getStoredUser, logoutUser } from '../../services/auth.js'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { useCart } from '../../context/CartContext.jsx'
+import { getProducts } from '../../services/productService.js'
+import { createOrder, getMyOrders } from '../../services/orderService.js'
 
-// Datos mock estáticos de los panes para presentación visual
-const BAKERY_ITEMS = [
-    {
-        id: 1,
-        name: 'Concha de Vainilla Tradicional',
-        category: 'Pan Dulce',
-        price: 18.00,
-        image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=600&auto=format&fit=crop',
-        description: 'Receta artesanal con costra crujiente de azúcar y mantequilla purísima.'
-    },
-    {
-        id: 2,
-        name: 'Croissant de Mantequilla',
-        category: 'Repostería',
-        price: 32.00,
-        image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?q=80&w=600&auto=format&fit=crop',
-        description: 'Hojaldre elaborado con 24 capas doradas, suave por dentro.'
-    },
-    {
-        id: 3,
-        name: 'Pan de Muerto Tradicional',
-        category: 'Temporada',
-        price: 38.00,
-        image: 'https://images.unsplash.com/photo-1586444248902-2f64eddc13df?q=80&w=600&auto=format&fit=crop',
-        description: 'Aromatizado con flor de azahar, naranja natural y un toque de canela.'
-    },
-    {
-        id: 4,
-        name: 'Baguette Rústica de Masa Madre',
-        category: 'Pan Salado',
-        price: 45.00,
-        image: 'https://images.unsplash.com/photo-1589367920969-ab8e050bbb04?q=80&w=600&auto=format&fit=crop',
-        description: 'Corteza crujiente y miga alvéolada con 18 hrs de fermentación.'
-    },
-    {
-        id: 5,
-        name: 'Dona Glaseada de Miel',
-        category: 'Pan Dulce',
-        price: 22.00,
-        image: 'https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?q=80&w=600&auto=format&fit=crop',
-        description: 'Esponjosa masa frita recubierta con glaseado artesanal de miel pura.'
-    },
-    {
-        id: 6,
-        name: 'Chocolatín Hojaldrado',
-        category: 'Repostería',
-        price: 35.00,
-        image: 'https://images.unsplash.com/photo-1608198093002-ad4e005484ec?q=80&w=600&auto=format&fit=crop',
-        description: 'Relleno de dos barras de chocolate amargo 70% cacao.'
-    }
-]
+const money = (n) => Number(n).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })
+const dateFormat = (iso) => new Date(iso).toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' })
 
-function Dashboard() {
-    const navigate = useNavigate()
-
-    // Leemos los datos reales guardados en localStorage tras el login
-    const storedUser = getStoredUser()
-
-    // Datos del usuario con valores por defecto por si falta algún campo
-    const user = {
-        name: storedUser ? `${storedUser.nombre || storedUser.name || 'Usuario'} ${storedUser.apellido_paterno || ''}`.trim() : 'Cliente',
-        email: storedUser?.email || storedUser?.correo || 'correo@ejemplo.com',
-        role: storedUser?.rol || storedUser?.role || 'Cliente'
-    }
-
-    // Estado para contador en el carrito (visual)
-    const [cartCount, setCartCount] = useState(0)
-
-    // Usamos tu función asíncrona de logoutUser()
-    const handleLogout = async () => {
-        await logoutUser()
-        navigate('/login')
-    }
-
-    const handleAddToCart = (item) => {
-        setCartCount(prev => prev + 1)
-    }
-
-    return (
-        <div className="min-h-screen bg-cream px-4 py-8 md:px-12">
-
-            {/* HEADER / PERFIL DEL USUARIO CON ACCIONES */}
-            <header className="mb-10 flex flex-col items-start justify-between gap-4 rounded-2xl border border-wheat/40 bg-wheat/10 p-6 shadow-sm md:flex-row md:items-center">
-
-                {/* Info del usuario */}
-                <div className="flex items-center gap-4">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-espresso font-display text-xl font-bold text-wheat shadow">
-                        {user.name.charAt(0)}
-                    </div>
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <h1 className="font-display text-xl font-bold text-espresso md:text-2xl">
-                                ¡Hola, {user.name}!
-                            </h1>
-                            <span className="rounded-full bg-wheat/30 px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-roast uppercase">
-                                {user.role}
-                            </span>
-                        </div>
-                        <p className="text-xs text-roast/80">{user.email}</p>
-                    </div>
-                </div>
-
-                {/* Botones de Acción Rápidos en la Esquina */}
-                <div className="flex w-full items-center justify-end gap-3 md:w-auto">
-
-                    {/* Botón 1: Favoritos / Notificaciones (Demostrativo) */}
-                    <button
-                        type="button"
-                        className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-wheat/50 bg-cream text-espresso transition-all hover:bg-wheat/20"
-                        title="Lista de Deseos"
-                    >
-                        <svg className="h-5 w-5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
-                            <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
-                    </button>
-
-                    {/* Botón 2: Carrito de Compras (Demostrativo) */}
-                    <button
-                        type="button"
-                        className="relative flex h-11 items-center gap-2.5 rounded-xl border border-wheat/50 bg-cream px-4 text-xs font-semibold uppercase tracking-wider text-espresso transition-all hover:bg-wheat/20"
-                    >
-                        <svg className="h-5 w-5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
-                            <path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                        </svg>
-                        <span className="hidden sm:inline">Carrito</span>
-                        {cartCount > 0 && (
-                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-caramel text-[11px] font-bold text-cream">
-                                {cartCount}
-                            </span>
-                        )}
-                    </button>
-
-                    {/* Botón 3: Cerrar Sesión */}
-                    <button
-                        onClick={handleLogout}
-                        className="flex h-11 items-center gap-2 rounded-xl bg-espresso px-4 text-xs font-semibold tracking-wider text-wheat transition-all hover:bg-roast shadow-sm"
-                    >
-                        <svg className="h-4 w-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
-                            <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                        </svg>
-                        <span className="hidden sm:inline">Cerrar Sesión</span>
-                    </button>
-
-                </div>
-            </header>
-
-            {/* SECCIÓN PRINCIPAL: CATÁLOGO DE PANES */}
-            <section>
-                <div className="mb-6 flex items-center justify-between">
-                    <div>
-                        <h2 className="font-display text-2xl font-bold text-espresso">
-                            Panes y Repostería Disponible
-                        </h2>
-                        <p className="text-sm text-roast/80">
-                            Selecciona tus productos favoritos recién horneados hoy.
-                        </p>
-                    </div>
-                </div>
-
-                {/* GRID DE CARDS */}
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {BAKERY_ITEMS.map((item) => (
-                        <div
-                            key={item.id}
-                            className="group flex flex-col overflow-hidden rounded-2xl border border-wheat/30 bg-cream shadow-md transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-espresso/10"
-                        >
-                            {/* Imagen del Pan */}
-                            <div className="relative h-48 w-full overflow-hidden bg-wheat/20">
-                                <img
-                                    src={item.image}
-                                    alt={item.name}
-                                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                />
-                                <span className="absolute top-3 left-3 rounded-full bg-cream/90 px-3 py-1 text-[11px] font-semibold text-espresso backdrop-blur-sm">
-                                    {item.category}
-                                </span>
-                            </div>
-
-                            {/* Contenido de la Card */}
-                            <div className="flex flex-1 flex-col justify-between p-5">
-                                <div>
-                                    <div className="flex items-start justify-between gap-2">
-                                        <h3 className="font-display text-lg font-bold text-espresso">
-                                            {item.name}
-                                        </h3>
-                                        <span className="font-display text-lg font-bold text-caramel">
-                                            ${item.price.toFixed(2)}
-                                        </span>
-                                    </div>
-                                    <p className="mt-2 text-xs text-roast/80 line-clamp-2">
-                                        {item.description}
-                                    </p>
-                                </div>
-
-                                {/* Botón Agregar a la lista */}
-                                <button
-                                    type="button"
-                                    onClick={() => handleAddToCart(item)}
-                                    className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-espresso bg-espresso py-2.5 text-xs font-semibold tracking-wider text-wheat transition-all hover:bg-roast active:scale-[0.98]"
-                                >
-                                    <svg className="h-4 w-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
-                                        <path d="M12 4v16m8-8H4" />
-                                    </svg>
-                                    Agregar a mi pedido
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-        </div>
-    )
+function minimumLocalDateTime() {
+  const date = new Date(Date.now() + 2 * 60 * 60 * 1000 + 60_000)
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
-export default Dashboard
+export default function Dashboard() {
+  const { items, count, changeQuantity, removeItem, clearCart } = useCart()
+  const [products, setProducts] = useState([])
+  const [orders, setOrders] = useState([])
+  const [tab, setTab] = useState('carrito')
+  const [pickup, setPickup] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState(null)
+  const load = useCallback(async () => {
+    const [catalog, history] = await Promise.all([getProducts(), getMyOrders()])
+    setProducts(catalog)
+    setOrders(history)
+  }, [])
+  useEffect(() => {
+    let active = true
+    setLoading(true)
+    Promise.all([getProducts(), getMyOrders()]).then(([catalog, history]) => {
+      if (active) { setProducts(catalog); setOrders(history) }
+    }).catch(() => { if (active) setError('No se pudieron cargar los productos o pedidos') })
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
+  }, [])
+
+  const cartRows = useMemo(() => items.map(item => {
+    const product = products.find(p => p.id === item.producto_id)
+    return { ...item, product }
+  }), [items, products])
+  const problems = cartRows.filter(x => !x.product || x.cantidad > x.product.stock)
+  const total = cartRows.reduce((acc, x) => acc + (x.product ? Math.round(Number(x.product.price) * 100) * x.cantidad : 0), 0) / 100
+
+  async function confirmOrder() {
+    if (!items.length || problems.length || !pickup || busy) return
+    setError('')
+    setSuccess(null)
+    const date = new Date(pickup)
+    if (Number.isNaN(date.getTime()) || date.getTime() < Date.now() + 2 * 3600000 || date.getTime() > Date.now() + 14 * 86400000) {
+      setError('Selecciona fecha y hora entre 2 horas y 14 días desde ahora')
+      return
+    }
+    setBusy(true)
+    try {
+      const order = await createOrder({
+        fecha_recoleccion: date.toISOString(),
+        items: items.map(x => ({ producto_id: x.producto_id, cantidad: x.cantidad }))
+      })
+      clearCart()
+      setSuccess(order)
+      setPickup('')
+      setTab('carrito')
+      try { await load() } catch { /* El pedido ya está confirmado; no ocultar el éxito si falla la actualización */ }
+    } catch (err) {
+      setError(err.response?.data?.error || 'No se pudo confirmar. Comprueba el stock y vuelve a intentar.')
+      try { setProducts(await getProducts()) } catch { /* El mensaje de error original se conserva */ }
+    } finally { setBusy(false) }
+  }
+
+  return <div className="min-h-screen bg-cream px-4 py-8 md:px-12">
+    <div className="mx-auto max-w-6xl">
+      <div className="mb-8 rounded-2xl border border-wheat/40 bg-wheat/10 p-5">
+        <h1 className="font-display text-2xl font-bold text-espresso">Mi espacio de compras</h1>
+        <p className="mt-1 text-sm text-roast/70">Prepara tu carrito y recoge tu pedido en la tienda.</p>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <button type="button" onClick={() => { setTab('carrito'); setError('') }} className={`rounded-xl px-5 py-2 text-sm font-semibold ${tab === 'carrito' ? 'bg-espresso text-cream' : 'border border-wheat text-espresso'}`}>Mi carrito ({count})</button>
+          <button type="button" onClick={() => { setTab('pedidos'); setError('') }} className={`rounded-xl px-5 py-2 text-sm font-semibold ${tab === 'pedidos' ? 'bg-espresso text-cream' : 'border border-wheat text-espresso'}`}>Mis pedidos</button>
+          <Link to="/menu" className="rounded-xl border border-wheat px-5 py-2 text-sm font-semibold text-espresso hover:bg-wheat/20">Seguir comprando</Link>
+        </div>
+      </div>
+      {loading && <p>Cargando…</p>}
+      {error && <p role="alert" className="mb-5 rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-800">{error}</p>}
+      {success && <div role="status" className="mb-7 rounded-xl border border-green-300 bg-green-50 p-5 text-green-900">
+        <h2 className="font-display text-xl font-bold">¡Pedido registrado!</h2>
+        <p className="mt-2">Código para recoger: <strong className="select-all text-xl">{success.codigo_recoleccion}</strong></p>
+        <p className="mt-1 text-sm">Recolección: {dateFormat(success.fecha_recoleccion)}. Total: {money(success.total)}. Pago pendiente en sucursal.</p>
+        <p className="mt-1 text-xs">Guarda este código. También aparecerá en Mis pedidos.</p>
+      </div>}
+      {!loading && tab === 'carrito' && <section>
+        <h2 className="mb-5 font-display text-xl font-bold text-espresso">Productos seleccionados</h2>
+        {!items.length ? <div className="rounded-2xl border border-wheat/40 p-8 text-center"><p>Tu carrito está vacío.</p><Link className="mt-3 inline-block text-caramel underline" to="/menu">Ver menú</Link></div> : <>
+          <div className="space-y-4">{cartRows.map(({ producto_id, cantidad, product }) => <article key={producto_id} className="flex flex-wrap items-center gap-4 rounded-xl border border-wheat/40 bg-white/60 p-4">
+            {product?.image && <img src={product.image} alt="" className="h-20 w-20 rounded-lg object-cover" />}
+            <div className="min-w-[160px] flex-1"><h3 className="font-display font-semibold text-espresso">{product?.name || `Producto ${producto_id} no disponible`}</h3>
+              <p className="text-xs text-roast/70">{product ? `${money(product.price)} por unidad · ${product.stock} disponibles` : 'Retíralo del carrito'}</p>
+              {product && cantidad > product.stock && <p className="mt-1 text-xs text-red-700">Reduce la cantidad para continuar</p>}
+            </div>
+            <div className="flex items-center gap-2">
+              <button type="button" aria-label="Quitar una unidad" onClick={() => changeQuantity(producto_id, cantidad - 1, product?.stock ?? 0)} className="rounded border border-espresso/20 px-3 py-1">−</button>
+              <span className="w-6 text-center tabular-nums">{cantidad}</span>
+              <button type="button" aria-label="Agregar una unidad" disabled={!product || cantidad >= product.stock || cantidad >= 1000} onClick={() => changeQuantity(producto_id, cantidad + 1, product.stock)} className="rounded border border-espresso/20 px-3 py-1 disabled:opacity-40">+</button>
+            </div>
+            <div className="min-w-[90px] text-right font-semibold text-caramel">{money((product?.price || 0) * cantidad)}</div>
+            <button type="button" className="text-sm text-red-700 underline" onClick={() => removeItem(producto_id)}>Eliminar</button>
+          </article>)}</div>
+          <div className="mt-6 rounded-2xl border border-wheat/40 bg-wheat/10 p-6">
+            <div className="flex justify-between font-display text-xl font-bold text-espresso"><span>Total</span><span>{money(total)}</span></div>
+            <p className="mt-2 text-sm text-roast/70">Solo recolección en tienda. El pago se realiza en sucursal.</p>
+            <label htmlFor="fecha-recoleccion" className="mt-5 block text-sm font-semibold text-espresso">Fecha y hora de recolección</label>
+            <input id="fecha-recoleccion" type="datetime-local" value={pickup} min={minimumLocalDateTime()} onChange={e => setPickup(e.target.value)} className="mt-2 block w-full max-w-sm rounded-lg border border-wheat bg-white p-3 text-espresso" />
+            <p className="mt-2 text-xs text-roast/70">Mínimo 2 horas de anticipación; máximo 14 días. Verifica que la hora elegida esté dentro del horario de la sucursal.</p>
+            <button type="button" disabled={busy || !pickup || problems.length > 0} onClick={confirmOrder} className="mt-5 w-full rounded-xl bg-espresso px-5 py-3 font-semibold text-cream hover:bg-roast disabled:opacity-50 sm:w-auto">{busy ? 'Confirmando…' : 'Confirmar pedido para recoger'}</button>
+          </div>
+        </>}
+      </section>}
+      {!loading && tab === 'pedidos' && <section>
+        <h2 className="mb-5 font-display text-xl font-bold text-espresso">Mis pedidos</h2>
+        {!orders.length && <p>No tienes pedidos registrados todavía.</p>}
+        <div className="space-y-4">{orders.map(order => <article key={order.id} className="rounded-xl border border-wheat/40 bg-white/60 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3"><h3 className="font-display text-lg font-bold">Pedido #{order.id}</h3><strong className="text-caramel">{money(order.total)}</strong></div>
+          <p className="mt-2 text-sm">Código: <strong className="select-all">{order.codigo_recoleccion}</strong></p>
+          <p className="mt-1 text-sm">Recolección: {dateFormat(order.fecha_recoleccion)}</p>
+          <p className="mt-1 text-sm">Estado: <strong>{order.estado.replaceAll('_', ' ')}</strong> · Pago: {order.estado_pago}</p>
+        </article>)}</div>
+      </section>}
+    </div>
+  </div>
+}

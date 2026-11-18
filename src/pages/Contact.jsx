@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import SectionHeading from '../components/SectionHeading.jsx'
-import { sendContactForm } from '../services/contact.js'
+import { sendContactForm } from '../services/contactService.js'
 
 function Contact() {
   const [form, setForm] = useState({ nombre: '', correo: '', mensaje: '' })
